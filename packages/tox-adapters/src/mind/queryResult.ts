@@ -6,6 +6,7 @@ import type { QueryResult } from '@kb-labs/mind-types';
 import { encodeJson, type ToxJson } from '@kb-labs/tox-codec-json';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { canonicalizePaths } from './path-canonicalization';
 
 const DEFAULT_PRESET_KEYS = [
   'edges',
@@ -30,6 +31,8 @@ export interface ToToxQueryResultOptions {
   preset?: string;
   compact?: boolean;
   strict?: boolean;
+  aggressive?: boolean; // Domain-specific optimizations (LLM-friendly)
+  canonicalizePaths?: boolean; // Extract common path prefixes
 }
 
 /**
@@ -39,7 +42,13 @@ export function toToxQueryResult(
   result: QueryResult,
   opts: ToToxQueryResultOptions = {}
 ): { ok: boolean; code?: string; message?: string; result?: ToxJson } {
-  const { preset = 'mind-v1', compact = false, strict = false } = opts;
+  const { 
+    preset = 'mind-v1', 
+    compact = false, 
+    strict = false,
+    aggressive = false,
+    canonicalizePaths: shouldCanonicalize = aggressive || false,
+  } = opts;
 
   // Load preset keys
   let presetKeys = DEFAULT_PRESET_KEYS;
@@ -61,13 +70,31 @@ export function toToxQueryResult(
   // Sort special arrays for determinism
   const sortedResult = sortSpecialArrays(result);
 
+  // Apply domain-specific optimizations if aggressive mode
+  let dataToEncode: any = sortedResult;
+  let pathPrefix: string | undefined;
+  
+  if (shouldCanonicalize && sortedResult.result) {
+    const { data, pathPrefix: prefix } = canonicalizePaths(sortedResult.result as Record<string, unknown>);
+    dataToEncode = { ...sortedResult, result: data };
+    pathPrefix = prefix;
+  }
+
   // Encode
-  const encoded = encodeJson(sortedResult, {
+  const encoded = encodeJson(dataToEncode, {
     presetKeys,
     compact,
     strict,
     preset: preset === 'mind-v1' ? 'mind-v1' : undefined,
   });
+
+  // Add path prefix to metadata if canonicalized
+  if (encoded.ok && encoded.result && pathPrefix) {
+    if (!encoded.result.$meta) {
+      encoded.result.$meta = {} as any;
+    }
+    (encoded.result.$meta as any).pathPrefix = pathPrefix;
+  }
 
   return encoded;
 }

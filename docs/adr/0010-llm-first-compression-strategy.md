@@ -1,6 +1,6 @@
 # ADR-0010: LLM-First Compression Strategy
 
-**Date:** 2025-01-26  
+**Date:** 2025-01-29  
 **Status:** Proposed  
 **Deciders:** KB Labs Team
 
