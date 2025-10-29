@@ -88,7 +88,10 @@ describe('Roundtrip', () => {
       throw new Error('Decoding failed');
     }
 
-    expect((decoded.result as any).date).toBe(date.toISOString());
+    // Date is converted to ISO string during normalization
+    // So decoded result contains ISO string, not Date object
+    expect((decoded.result as any).date).toBe('2025-01-01T00:00:00.000Z');
+    expect((decoded.result as any).value).toBe(1);
   });
 
   it('should roundtrip with preset keys', () => {

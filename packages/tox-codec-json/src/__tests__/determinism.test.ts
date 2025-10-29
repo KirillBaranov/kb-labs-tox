@@ -29,9 +29,14 @@ describe('Determinism', () => {
       throw new Error('Encoding failed');
     }
 
-    const json1 = JSON.stringify(encoded1.result);
-    const json2 = JSON.stringify(encoded2.result);
-    const json3 = JSON.stringify(encoded3.result);
+    // Compare without $meta.generatedAt (timestamp changes between encodes)
+    const result1 = { ...encoded1.result, $meta: { ...encoded1.result.$meta, generatedAt: 'fixed' } };
+    const result2 = { ...encoded2.result, $meta: { ...encoded2.result.$meta, generatedAt: 'fixed' } };
+    const result3 = { ...encoded3.result, $meta: { ...encoded3.result.$meta, generatedAt: 'fixed' } };
+    
+    const json1 = JSON.stringify(result1);
+    const json2 = JSON.stringify(result2);
+    const json3 = JSON.stringify(result3);
 
     expect(json1).toBe(json2);
     expect(json2).toBe(json3);
@@ -90,9 +95,11 @@ describe('Determinism', () => {
     // Dictionary should be identical
     expect(encoded1.result.$dict).toEqual(encoded2.result.$dict);
 
-    // Full output should be identical
-    const json1 = JSON.stringify(encoded1.result);
-    const json2 = JSON.stringify(encoded2.result);
+    // Full output should be identical (without timestamp)
+    const result1 = { ...encoded1.result, $meta: { ...encoded1.result.$meta, generatedAt: 'fixed' } };
+    const result2 = { ...encoded2.result, $meta: { ...encoded2.result.$meta, generatedAt: 'fixed' } };
+    const json1 = JSON.stringify(result1);
+    const json2 = JSON.stringify(result2);
     expect(json1).toBe(json2);
   });
 

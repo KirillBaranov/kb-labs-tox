@@ -90,8 +90,12 @@ describe('toToxQueryResult / fromToxQueryResult', () => {
       throw new Error('Encoding failed');
     }
 
-    const json1 = JSON.stringify(encoded1.result);
-    const json2 = JSON.stringify(encoded2.result);
+    // Compare without $meta.generatedAt (timestamp changes between encodes)
+    const result1 = { ...encoded1.result, $meta: { ...encoded1.result.$meta, generatedAt: 'fixed' } };
+    const result2 = { ...encoded2.result, $meta: { ...encoded2.result.$meta, generatedAt: 'fixed' } };
+    
+    const json1 = JSON.stringify(result1);
+    const json2 = JSON.stringify(result2);
     expect(json1).toBe(json2);
   });
 });

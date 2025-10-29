@@ -255,8 +255,8 @@ export function normalize(
     return { value: null, error: (result as any).error };
   }
 
-  // Extract value if wrapped
-  const value = result && typeof result === 'object' && 'value' in result
+  // Extract value if wrapped (only if it's an error object, not a regular object with 'value' property)
+  const value = result && typeof result === 'object' && 'error' in result
     ? (result as any).value
     : result;
 

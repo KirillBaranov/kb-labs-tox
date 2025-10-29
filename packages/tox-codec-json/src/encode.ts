@@ -118,13 +118,13 @@ export function encodeJson(
     const shouldUseDict = dictSize > 0 && (compact || dictSize <= dataStr.length * 0.5);
 
     // Replace keys in data with IDs
-    const replaceKeys = (value: unknown): unknown => {
+    const replaceKeys = (value: unknown, path = '<root>'): unknown => {
       if (value === null || typeof value !== 'object') {
         return value;
       }
 
       if (Array.isArray(value)) {
-        return value.map(replaceKeys);
+        return value.map((item, idx) => replaceKeys(item, `${path}[${idx}]`));
       }
 
       const obj = value as Record<string, unknown>;
@@ -132,21 +132,26 @@ export function encodeJson(
       for (const [key, val] of Object.entries(obj)) {
         if (RESERVED_KEYS.includes(key)) {
           if (strict) {
-            throw new Error(`Reserved key '${key}' found in data`);
+            const error = new Error(`Reserved key '${key}' found in data`) as any;
+            error.code = ToxErrorCode.STRICT_MODE_VIOLATION;
+            error.path = `${path}.${key}`;
+            throw error;
           }
           continue;
         }
+
+        const newPath = path === '<root>' ? key : `${path}.${key}`;
 
         // Only replace if using dict and key is in dictionary
         if (shouldUseDict) {
           const keyId = keyPool.getId(key);
           if (keyId) {
-            result[keyId] = replaceKeys(val);
+            result[keyId] = replaceKeys(val, newPath);
           } else {
-            result[key] = replaceKeys(val);
+            result[key] = replaceKeys(val, newPath);
           }
         } else {
-          result[key] = replaceKeys(val);
+          result[key] = replaceKeys(val, newPath);
         }
       }
 
@@ -173,9 +178,9 @@ export function encodeJson(
   } catch (error: any) {
     return {
       ok: false,
-      code: ToxErrorCode.ENCODE_ERROR,
+      code: error.code || ToxErrorCode.ENCODE_ERROR,
       message: error.message || 'Encoding failed',
-      hint: error.path,
+      hint: error.path || error.hint,
     };
   }
 }
