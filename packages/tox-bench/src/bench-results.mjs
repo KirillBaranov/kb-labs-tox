@@ -72,7 +72,10 @@ console.log();
 console.log('=== Threshold Check ===');
 console.log('Target: externals/docs/meta ≥35%, impact/chain ≥25%');
 console.log();
-console.log('⚠️  Note: Real-world fixtures from mind queries would be much larger');
-console.log('    and would achieve better compression ratios.');
-console.log('    Current fixtures are mock data for testing.');
+console.log('=== Notes ===');
+console.log('• Small mock fixtures (< 1KB) show negative compression due to TOX metadata overhead');
+console.log('• Real fixtures (api-index, docs-index) show modest compression (0-4%)');
+console.log('• These data structures have many unique keys (file paths), limiting dictionary benefits');
+console.log('• Better compression expected with query results (edges, importers, externals)');
+console.log('  that have repeated keys across similar objects');
 
