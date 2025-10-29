@@ -140,7 +140,7 @@ export class ValuePool {
     if (typeof value === 'string') {
       return `string:${value}`;
     }
-    return bashunknown:${String(value)}`;
+      return `unknown:${String(value)}`;
   }
 
   /**
