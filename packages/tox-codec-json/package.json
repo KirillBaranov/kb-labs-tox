@@ -1,5 +1,19 @@
 {
   "name": "@kb-labs/tox-codec-json",
+  "description": "JSON codec for KB Labs TOX - Toolchain for Object eXchange",
+  "author": {
+    "name": "Kirill Baranov",
+    "url": "https://github.com/kirill-baranov"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kirill-baranov/kb-labs-tox.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kirill-baranov/kb-labs-tox/issues"
+  },
+  "homepage": "https://github.com/kirill-baranov/kb-labs-tox#readme",
   "version": "0.1.0",
   "type": "module",
   "main": "./dist/index.js",
