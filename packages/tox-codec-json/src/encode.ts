@@ -43,6 +43,8 @@ export interface ToxJson {
         n: number;
         uniformity: number;
         savings?: number;
+        mode?: 'rows' | 'cols';
+        avgValueLen?: number;
       };
       [key: string]: unknown;
     };
@@ -258,13 +260,15 @@ export function encodeJson(
     let shapePool: ShapePool | null = null;
     let shouldUseShapePool = false;
     let shapesDict: Record<string, string[]> | undefined = undefined;
-    const shapeEncodedArrays = new Map<string, { shapeId: string; rows: unknown[][] }>();
+    const shapeEncodedArrays = new Map<string, { shapeId: string; rows?: unknown[][]; cols?: Record<string, unknown[]>; mode: 'rows' | 'cols' }>();
     const shapePoolDecision = {
       enabled: false,
       arrayName: undefined as string | undefined,
       n: 0,
       uniformity: 0,
       savings: 0,
+      mode: undefined as 'rows' | 'cols' | undefined,
+      avgValueLen: 0,
     };
 
     // Detect arrays of objects and check for ShapePool eligibility
@@ -325,21 +329,56 @@ export function encodeJson(
                 }
 
                 if (enableShapePool === true || (enableShapePool === 'auto' && rows.length >= 10)) {
-                  // Estimate savings: compare tuple format vs full objects
+                  // Decide between row (tuple) and columnar format
+                  const threshold = columnarThreshold || 2000;
+                  const n = rows.length;
+                  
+                  // Calculate average value length for columnar heuristic
+                  let totalValueLen = 0;
+                  let valueCount = 0;
+                  for (const row of rows) {
+                    for (const val of row) {
+                      const valStr = typeof val === 'string' ? val : JSON.stringify(val);
+                      totalValueLen += valStr.length;
+                      valueCount++;
+                    }
+                  }
+                  const avgValueLen = valueCount > 0 ? totalValueLen / valueCount : 0;
+                  
+                  // Heuristic: use columnar if n ≥ threshold AND avgValueLen ≤ 24
+                  const shouldUseColumnar = n >= threshold && avgValueLen <= 24;
+                  
+                  let encodedFormat: { shapeId: string; rows?: unknown[][]; cols?: Record<string, unknown[]>; mode: 'rows' | 'cols' };
+                  
+                  if (shouldUseColumnar) {
+                    // Convert to columnar format: { cols: { key1: [val1, val2, ...], ... } }
+                    const cols: Record<string, unknown[]> = {};
+                    for (let i = 0; i < mostCommon.shape.length; i++) {
+                      const key = mostCommon.shape[i]!;
+                      cols[key] = rows.map((row) => row[i]);
+                    }
+                    encodedFormat = { shapeId, cols, mode: 'cols' };
+                  } else {
+                    encodedFormat = { shapeId, rows, mode: 'rows' };
+                  }
+                  
+                  // Estimate savings: compare format vs full objects
                   const originalSize = JSON.stringify(objects).length;
-                  const tupleSize = JSON.stringify({ $shape: shapeId, rows }).length;
+                  const encodedSize = JSON.stringify({ $shape: shapeId, ...(shouldUseColumnar ? { cols: encodedFormat.cols } : { rows: encodedFormat.rows }) }).length;
                   const shapeDictSize = JSON.stringify({ [shapeId]: mostCommon.shape }).length;
-                  const estimatedSavings = originalSize - tupleSize - shapeDictSize;
+                  const estimatedSavings = originalSize - encodedSize - shapeDictSize;
 
                   if (enableShapePool === true || estimatedSavings > shapeDictSize) {
                     shouldUseShapePool = true;
                     shapePoolDecision.enabled = true;
                     shapePoolDecision.arrayName = parentKey || path;
-                    shapePoolDecision.n = rows.length;
+                    shapePoolDecision.n = n;
                     shapePoolDecision.uniformity = uniformity;
                     shapePoolDecision.savings = estimatedSavings;
+                    shapePoolDecision.mode = shouldUseColumnar ? 'cols' : 'rows';
+                    shapePoolDecision.avgValueLen = avgValueLen;
                     
-                    shapeEncodedArrays.set(path, { shapeId, rows });
+                    shapeEncodedArrays.set(path, encodedFormat);
                   }
                 }
               }
@@ -382,10 +421,25 @@ export function encodeJson(
         // Check if this array was encoded with ShapePool
         const encoded = shapeEncodedArrays.get(path);
         if (encoded) {
-          return {
-            $shape: encoded.shapeId,
-            rows: encoded.rows.map((row) => row.map((item) => replaceKeys(item, `${path}[row]`))),
-          };
+          if (encoded.mode === 'cols' && encoded.cols) {
+            // Columnar format: process column values
+                  const processedCols: Record<string, unknown[]> = {};
+                  for (const [key, colValues] of Object.entries(encoded.cols)) {
+                    if (Array.isArray(colValues)) {
+                      processedCols[key] = colValues.map((item) => replaceKeys(item, `${path}[${key}]`));
+                    }
+            }
+            return {
+              $shape: encoded.shapeId,
+              cols: processedCols,
+            };
+          } else if (encoded.mode === 'rows' && encoded.rows) {
+            // Row (tuple) format
+            return {
+              $shape: encoded.shapeId,
+              rows: encoded.rows.map((row) => row.map((item) => replaceKeys(item, `${path}[row]`))),
+            };
+          }
         }
         
         return value.map((item, idx) => replaceKeys(item, `${path}[${idx}]`));
@@ -437,7 +491,16 @@ export function encodeJson(
 
     const features: Record<string, boolean> = {};
     if (shouldUsePathPool) features.pathPool = true;
-    if (shouldUseShapePool) features.shapePool = true;
+    if (shouldUseShapePool) {
+      features.shapePool = true;
+      // Check if any array uses columnar mode
+      for (const encoded of shapeEncodedArrays.values()) {
+        if (encoded.mode === 'cols') {
+          features.columnar = true;
+          break;
+        }
+      }
+    }
 
     const result: ToxJson = {
       $schemaVersion: '1.0',

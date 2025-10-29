@@ -49,29 +49,70 @@ export function decodeJson(toxJson: ToxJson, strict = false): DecodeJsonResult {
 
     // Resolve keys, paths, shapes, and values
     function resolve(value: unknown): unknown {
-      // Check if this is a ShapePool encoded array: { $shape: "s1", rows: [...] }
+      // Check if this is a ShapePool encoded array: { $shape: "s1", rows: [...] } or { $shape: "s1", cols: {...} }
       if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
         const obj = value as Record<string, unknown>;
-        if ('$shape' in obj && 'rows' in obj && typeof obj.$shape === 'string') {
+        if ('$shape' in obj && typeof obj.$shape === 'string') {
           const shapeId = obj.$shape;
-          const rows = obj.rows;
           
           // Get shape from dictionary
           const shape = shapesDict[shapeId];
-          if (shape && Array.isArray(rows)) {
-            // Reconstruct array of objects from shape and tuples
-            const reconstructed = rows.map((row) => {
-              if (!Array.isArray(row)) {
-                return row;
+          if (shape) {
+            // Check for columnar format (cols)
+            if ('cols' in obj && typeof obj.cols === 'object' && obj.cols !== null) {
+              const cols = obj.cols as Record<string, unknown[]>;
+              
+              // Reconstruct array from columns
+              // Find maximum length across all columns
+              let maxLength = 0;
+              for (const colValues of Object.values(cols)) {
+                if (Array.isArray(colValues)) {
+                  maxLength = Math.max(maxLength, colValues.length);
+                }
               }
-              const obj: Record<string, unknown> = {};
-              for (let i = 0; i < shape.length; i++) {
-                const key = shape[i]!;
-                obj[key] = resolve(row[i]);
+              
+              // Resolve nested values in columns first, then reconstruct
+              const resolvedCols: Record<string, unknown[]> = {};
+              for (const key of shape) {
+                const colValues = cols[key];
+                if (Array.isArray(colValues)) {
+                  resolvedCols[key] = colValues.map((val) => resolve(val));
+                }
               }
-              return obj;
-            });
-            return reconstructed;
+              
+              // Reconstruct rows from resolved columns
+              const reconstructed = [];
+              for (let i = 0; i < maxLength; i++) {
+                const objRow: Record<string, unknown> = {};
+                for (const key of shape) {
+                  const colValues = resolvedCols[key];
+                  if (Array.isArray(colValues) && i < colValues.length) {
+                    objRow[key] = colValues[i];
+                  }
+                }
+                reconstructed.push(objRow);
+              }
+              return reconstructed;
+            }
+            
+            // Check for row (tuple) format (rows)
+            if ('rows' in obj && Array.isArray(obj.rows)) {
+              const rows = obj.rows;
+              
+              // Reconstruct array of objects from shape and tuples
+              const reconstructed = rows.map((row) => {
+                if (!Array.isArray(row)) {
+                  return row;
+                }
+                const objRow: Record<string, unknown> = {};
+                for (let i = 0; i < shape.length; i++) {
+                  const key = shape[i]!;
+                  objRow[key] = resolve(row[i]);
+                }
+                return objRow;
+              });
+              return reconstructed;
+            }
           }
         }
       }
