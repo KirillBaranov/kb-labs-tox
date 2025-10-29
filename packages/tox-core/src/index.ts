@@ -15,6 +15,7 @@ export { ToxErrorCode } from './errors';
 export { KeyPool, StringPool } from './pool';
 export { PathPool, splitPath, joinPath, isLikelyPath, analyzePaths } from './path';
 export { ShapePool, deriveShape, calculateUniformity } from './shape';
+export { ValuePool } from './value-pool';
 export type { NormalizeResult } from './normalize';
 export type { PathStats } from './path';
 
