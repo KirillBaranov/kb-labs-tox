@@ -46,7 +46,12 @@ export function longestCommonPrefix(strings: string[]): string {
     return '';
   }
   
-  const prefix = segmentArrays[0].slice(0, commonDepth).join('/') + '/';
+  const firstSegments = segmentArrays[0];
+  if (!firstSegments || firstSegments.length === 0) {
+    return '';
+  }
+  
+  const prefix = firstSegments.slice(0, commonDepth).join('/') + '/';
   return prefix;
 }
 
