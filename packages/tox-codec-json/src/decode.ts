@@ -2,7 +2,7 @@
  * Decode TOX JSON format to object
  */
 
-import { ToxErrorCode } from '@kb-labs/tox-core';
+import { ToxErrorCode, PathPool, joinPath } from '@kb-labs/tox-core';
 import type { ToxJson } from './encode';
 
 export interface DecodeJsonResult {
@@ -28,11 +28,42 @@ export function decodeJson(toxJson: ToxJson, strict = false): DecodeJsonResult {
       };
     }
 
-    // Get dictionary
+    // Get dictionaries
     const dict = toxJson.$dict || {};
+    const pathDict = toxJson.$pathDict || {};
 
-    // Resolve keys and values
+    // Build PathPool for path reconstruction
+    const pathPool = new PathPool();
+    for (const [id, segment] of Object.entries(pathDict)) {
+      pathPool.add(segment);
+      // Map ID back to segment (PathPool uses its own IDs, so we need manual mapping)
+      (pathPool as any).entries.set(segment, { id, value: segment, frequency: 0 });
+    }
+
+    // Helper to reconstruct path from segment IDs array
+    const reconstructPath = (segmentIds: string[]): string => {
+      const segments = segmentIds.map((id) => pathDict[id] || id);
+      return joinPath(segments);
+    };
+
+    // Resolve keys, paths, and values
     function resolve(value: unknown): unknown {
+      // Check if this is a path segment array (array of strings matching pathDict IDs)
+      if (Array.isArray(value) && value.length > 0 && typeof value[0] === 'string') {
+        // Check if all items look like segment IDs (start with 'p' followed by digits)
+        const allAreSegmentIds = value.every((item) => typeof item === 'string' && /^p\d+$/.test(item));
+        if (allAreSegmentIds && Object.keys(pathDict).length > 0) {
+          // Try to reconstruct path
+          const reconstructed = reconstructPath(value as string[]);
+          // If reconstruction succeeded (all segments found), return path string
+          if (reconstructed.split('/').every((seg) => seg.length > 0 || value.length === 1)) {
+            return reconstructed;
+          }
+        }
+        // Otherwise, resolve array items normally
+        return value.map(resolve);
+      }
+
       if (value === null || typeof value !== 'object') {
         return value;
       }

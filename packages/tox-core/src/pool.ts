@@ -125,31 +125,5 @@ export class KeyPool extends StringPool {
   }
 }
 
-/**
- * Path pool for interning file paths
- */
-export class PathPool extends StringPool {
-  /**
-   * Create path ID (p1, p2, ...)
-   */
-  override add(value: string): string {
-    const existing = this.getId(value);
-    if (existing) {
-      const entry = (this as any).entries.get(value);
-      if (entry) {
-        entry.frequency++;
-      }
-      return existing;
-    }
-
-    const id = `p${(this as any).idCounter++}`;
-    (this as any).entries.set(value, {
-      id,
-      value,
-      frequency: 1,
-    });
-
-    return id;
-  }
-}
+// PathPool moved to path.ts for segment-based path handling
 

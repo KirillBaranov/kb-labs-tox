@@ -37,6 +37,16 @@ export function getToxJsonSchema() {
         },
         additionalProperties: false,
       },
+      $pathDict: {
+        type: "object",
+        patternProperties: {
+          "^p[0-9]+$": {
+            type: "string",
+          },
+        },
+        additionalProperties: false,
+        description: "Path segment dictionary mapping wrapped IDs to segment strings",
+      },
       data: {
         description: "The actual data payload",
       },

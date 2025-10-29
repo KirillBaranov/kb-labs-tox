@@ -2,10 +2,10 @@
  * Encode object to TOX JSON format
  */
 
-import { normalize, ToxErrorCode, KeyPool } from '@kb-labs/tox-core';
+import { normalize, ToxErrorCode, KeyPool, PathPool, analyzePaths, isLikelyPath, splitPath } from '@kb-labs/tox-core';
 import type { SchemaVersion } from '@kb-labs/tox-core';
 
-const RESERVED_KEYS = ['$schemaVersion', '$meta', '$dict', 'data'];
+const RESERVED_KEYS = ['$schemaVersion', '$meta', '$dict', '$pathDict', '$valDict', '$shapes', 'data'];
 
 export interface ToxJson {
   $schemaVersion: SchemaVersion;
@@ -13,8 +13,33 @@ export interface ToxJson {
     generatedAt: string;
     producer: string;
     preset?: string;
+    features?: {
+      pathPool?: boolean;
+      shapePool?: boolean;
+      columnar?: boolean;
+      valuePool?: boolean;
+    };
+    decisions?: {
+      pathPool?: {
+        enabled: boolean;
+        pathsRatio: number;
+        avgSegments: number;
+        savings?: number;
+      };
+      shapePool?: {
+        enabled: boolean;
+        arrayName?: string;
+        n: number;
+        uniformity: number;
+        savings?: number;
+      };
+      [key: string]: unknown;
+    };
+    encodeMs?: number;
+    decodeMs?: number;
   };
   $dict?: Record<string, string>;
+  $pathDict?: Record<string, string>;
   data: unknown;
 }
 
@@ -24,6 +49,11 @@ export interface EncodeJsonOptions {
   strict?: boolean;
   preset?: string;
   debug?: boolean;
+  enablePathPool?: boolean | 'auto';
+  enableShapePool?: boolean | 'auto';
+  enableValuePool?: boolean | 'auto';
+  columnarThreshold?: number;
+  adaptive?: boolean;
 }
 
 export interface EncodeJsonResult {
@@ -47,6 +77,11 @@ export function encodeJson(
     strict = false,
     preset,
     debug = false,
+    enablePathPool = 'auto',
+    enableShapePool = 'auto',
+    enableValuePool = 'auto',
+    columnarThreshold = 2000,
+    adaptive = false,
   } = opts;
 
   try {
@@ -143,9 +178,79 @@ export function encodeJson(
       shouldUseDict = false;
     }
 
-    // Replace keys in data with IDs
+    // PathPool: analyze and build if beneficial
+    let pathPool: PathPool | null = null;
+    let shouldUsePathPool = false;
+    let pathDict: Record<string, string> | undefined = undefined;
+    const pathStats = analyzePaths(normalized.value);
+    const pathPoolDecision = {
+      enabled: false,
+      pathsRatio: pathStats.pathsRatio,
+      avgSegments: pathStats.avgSegments,
+      savings: 0,
+    };
+
+    // PathPool heuristic: pathsRatio ≥ 0.15 and avgSegments ≥ 3
+    if (
+      enablePathPool === true ||
+      (enablePathPool === 'auto' && pathStats.pathsRatio >= 0.15 && pathStats.avgSegments >= 3)
+    ) {
+      pathPool = new PathPool();
+      
+      // First pass: collect all paths into pool
+      const collectPaths = (value: unknown): void => {
+        if (value === null || typeof value !== 'object') {
+          if (typeof value === 'string' && isLikelyPath(value)) {
+            pathPool!.addPath(value);
+          }
+          return;
+        }
+        if (Array.isArray(value)) {
+          value.forEach(collectPaths);
+          return;
+        }
+        for (const val of Object.values(value)) {
+          collectPaths(val);
+        }
+      };
+      collectPaths(normalized.value);
+      
+      // Build path dictionary
+      pathDict = pathPool.toDict();
+      
+      // Estimate savings: compare segment IDs vs full paths
+      // Rough estimate: if pathDict size < 30% of total path strings, beneficial
+      const pathDictOverhead = JSON.stringify(pathDict).length;
+      const estimatedPathStringsSize = pathStats.pathsCount * 30; // avg 30 chars per path
+      const estimatedSegmentIdsSize = pathStats.totalSegments * 3; // avg 3 chars per segment ID like "p1"
+      const estimatedSavings = estimatedPathStringsSize - estimatedSegmentIdsSize - pathDictOverhead;
+      
+      // If forced (enablePathPool === true), always use PathPool
+      if (enablePathPool === true) {
+        shouldUsePathPool = true;
+        pathPoolDecision.enabled = true;
+        pathPoolDecision.savings = estimatedSavings;
+      } else {
+        // Only use if savings > overhead (fail-closed)
+        if (estimatedSavings > pathDictOverhead) {
+          shouldUsePathPool = true;
+          pathPoolDecision.enabled = true;
+          pathPoolDecision.savings = estimatedSavings;
+        } else {
+          pathPoolDecision.savings = estimatedSavings;
+        }
+      }
+    }
+
+    // Replace keys and paths in data with IDs
     const replaceKeys = (value: unknown, path = '<root>'): unknown => {
       if (value === null || typeof value !== 'object') {
+        // Replace path strings with segment arrays if PathPool is enabled
+        if (typeof value === 'string' && shouldUsePathPool && pathPool && isLikelyPath(value)) {
+          // Path was already added to pool in collectPaths, so addPath will return existing IDs
+          const segmentIds = pathPool.addPath(value);
+          return segmentIds; // Return array of segment IDs
+        }
         return value;
       }
 
@@ -184,16 +289,31 @@ export function encodeJson(
       return result;
     };
 
+    const encodeStartMs = Date.now();
     const data = replaceKeys(normalized.value);
+    const encodeMs = Date.now() - encodeStartMs;
+
+    // Build decisions object
+    const decisions: Record<string, unknown> = {};
+    if (enablePathPool !== false) {
+      decisions.pathPool = pathPoolDecision;
+    }
+
+    const features: Record<string, boolean> = {};
+    if (shouldUsePathPool) features.pathPool = true;
 
     const result: ToxJson = {
       $schemaVersion: '1.0',
       $meta: {
         generatedAt: new Date().toISOString(),
         producer: `kb-tox@0.1.0`,
+        encodeMs: Math.round(encodeMs * 100) / 100,
         ...(preset ? { preset } : {}),
+        ...(Object.keys(features).length > 0 ? { features } : {}),
+        ...(Object.keys(decisions).length > 0 ? { decisions } : {}),
       },
       ...(shouldUseDict && Object.keys(dict).length > 0 ? { $dict: dict } : {}),
+      ...(shouldUsePathPool && pathDict && Object.keys(pathDict).length > 0 ? { $pathDict: pathDict } : {}),
       data,
     };
 

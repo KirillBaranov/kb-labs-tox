@@ -6,12 +6,15 @@
 export * from './types';
 export * from './normalize';
 export * from './pool';
+export * from './path';
 export * from './hash';
 export * from './errors';
 export * from './limits';
 export { ToxErrorCode } from './errors';
-export { KeyPool, PathPool, StringPool } from './pool';
+export { KeyPool, StringPool } from './pool';
+export { PathPool, splitPath, joinPath, isLikelyPath, analyzePaths } from './path';
 export type { NormalizeResult } from './normalize';
+export type { PathStats } from './path';
 
 import type { ToToxOpts, ToxAST, TokenEstimate } from './types';
 import { normalize } from './normalize';
