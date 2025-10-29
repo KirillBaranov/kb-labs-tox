@@ -142,7 +142,6 @@ export function encodeJson(
     if (originalDataSize < 2000 && !compact) {
       shouldUseDict = false;
     }
-对这种
 
     // Replace keys in data with IDs
     const replaceKeys = (value: unknown, path = '<root>'): unknown => {
