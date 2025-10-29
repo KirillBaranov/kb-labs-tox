@@ -7,12 +7,14 @@ export * from './types';
 export * from './normalize';
 export * from './pool';
 export * from './path';
+export * from './shape';
 export * from './hash';
 export * from './errors';
 export * from './limits';
 export { ToxErrorCode } from './errors';
 export { KeyPool, StringPool } from './pool';
 export { PathPool, splitPath, joinPath, isLikelyPath, analyzePaths } from './path';
+export { ShapePool, deriveShape, calculateUniformity } from './shape';
 export type { NormalizeResult } from './normalize';
 export type { PathStats } from './path';
 
