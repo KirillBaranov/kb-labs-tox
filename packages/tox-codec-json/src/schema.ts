@@ -60,6 +60,16 @@ export function getToxJsonSchema() {
         additionalProperties: false,
         description: "Shape dictionary mapping shape IDs to ordered key lists",
       },
+      $valDict: {
+        type: "object",
+        patternProperties: {
+          "^v[0-9]+$": {
+            description: "Value can be string, number, boolean, or null",
+          },
+        },
+        additionalProperties: false,
+        description: "Value dictionary mapping value IDs to scalar values",
+      },
       data: {
         description: "The actual data payload",
       },
