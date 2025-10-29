@@ -2,7 +2,7 @@
  * TOX decode command
  */
 
-import type { CommandModule } from './types.js';
+import type { CommandModule } from './types';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { decodeJson, type ToxJson } from '@kb-labs/tox-codec-json';

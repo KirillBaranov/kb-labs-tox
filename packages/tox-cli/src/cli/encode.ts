@@ -2,7 +2,7 @@
  * TOX encode command
  */
 
-import type { CommandModule } from './types.js';
+import type { CommandModule } from './types';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { encodeJson } from '@kb-labs/tox-codec-json';

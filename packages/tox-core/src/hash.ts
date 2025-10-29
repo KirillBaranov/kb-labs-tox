@@ -3,7 +3,7 @@
  */
 
 import { createHash } from 'node:crypto';
-import { normalize } from './normalize.js';
+import { normalize } from './normalize';
 
 /**
  * Create SHA256 hash of normalized object

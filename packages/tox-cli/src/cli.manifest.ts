@@ -2,7 +2,7 @@
  * TOX CLI manifest
  */
 
-import type { CommandManifest, FlagDefinition } from './cli/types.js';
+import type { CommandManifest, FlagDefinition } from './cli/types';
 
 export const commands: CommandManifest[] = [
   {

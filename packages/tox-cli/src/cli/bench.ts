@@ -2,7 +2,7 @@
  * TOX bench command
  */
 
-import type { CommandModule } from './types.js';
+import type { CommandModule } from './types';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { encodeJson, decodeJson } from '@kb-labs/tox-codec-json';
