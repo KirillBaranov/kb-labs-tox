@@ -5,6 +5,7 @@
 
 /**
  * Find longest common prefix in array of strings
+ * Returns directory portion (up to last /) to maximize savings
  */
 export function longestCommonPrefix(strings: string[]): string {
   if (strings.length === 0) return '';
@@ -15,20 +16,38 @@ export function longestCommonPrefix(strings: string[]): string {
     return lastSlash >= 0 ? str.substring(0, lastSlash + 1) : '';
   }
 
-  // Sort to ensure consistent results
-  const sorted = [...strings].sort();
-  const first = sorted[0] || '';
-  const last = sorted[sorted.length - 1] || '';
+  // Filter paths that don't have / separator (like root-level files)
+  const pathLike = strings.filter((s) => s.includes('/'));
   
-  let i = 0;
-  while (i < first.length && i < last.length && first[i] === last[i]) {
-    i++;
+  if (pathLike.length === 0) return '';
+  
+  // Sort to ensure consistent results
+  const sorted = [...pathLike].sort();
+  const first = sorted[0] || '';
+  
+  // Strategy: Find common leading SEGMENTS, not just characters
+  // This handles cases like "apps/" vs "packages/" better
+  const segmentArrays = sorted.map((p) => p.split('/'));
+  let commonDepth = 0;
+  
+  while (true) {
+    const seg = segmentArrays[0]?.[commonDepth];
+    if (!seg) break;
+    
+    // Check if all paths have same segment at this depth
+    const allSame = segmentArrays.every((s) => s[commonDepth] === seg);
+    if (!allSame) break;
+    
+    commonDepth++;
   }
   
-  // Return directory portion (up to last /)
-  const prefix = first.substring(0, i);
-  const lastSlash = prefix.lastIndexOf('/');
-  return lastSlash >= 0 ? prefix.substring(0, lastSlash + 1) : '';
+  // Build prefix from common segments
+  if (commonDepth === 0) {
+    return '';
+  }
+  
+  const prefix = segmentArrays[0].slice(0, commonDepth).join('/') + '/';
+  return prefix;
 }
 
 /**
