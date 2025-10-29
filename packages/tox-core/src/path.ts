@@ -157,7 +157,7 @@ export function analyzePaths(obj: unknown): PathStats {
 
   const uniqueSegs = new Set<string>();
 
-  function traverse(value: unknown): void {
+  function traverse(value: unknown, key?: string): void {
     if (value === null || typeof value !== 'object') {
       if (typeof value === 'string') {
         stats.totalStrings++;
@@ -168,16 +168,31 @@ export function analyzePaths(obj: unknown): PathStats {
           segments.forEach((seg) => uniqueSegs.add(seg));
         }
       }
+      // Also check keys (for structures like { "path/to.ts": {...} })
+      if (key && isLikelyPath(key)) {
+        stats.totalStrings++;
+        stats.pathsCount++;
+        const segments = splitPath(key);
+        stats.totalSegments += segments.length;
+        segments.forEach((seg) => uniqueSegs.add(seg));
+      }
       return;
     }
 
     if (Array.isArray(value)) {
-      value.forEach(traverse);
+      value.forEach((item) => traverse(item));
       return;
     }
 
-    for (const val of Object.values(value)) {
-      traverse(val);
+    for (const [k, val] of Object.entries(value)) {
+      if (isLikelyPath(k)) {
+        stats.totalStrings++;
+        stats.pathsCount++;
+        const segments = splitPath(k);
+        stats.totalSegments += segments.length;
+        segments.forEach((seg) => uniqueSegs.add(seg));
+      }
+      traverse(val, k);
     }
   }
 

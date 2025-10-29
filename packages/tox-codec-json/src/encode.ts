@@ -206,11 +206,16 @@ export function encodeJson(
       savings: 0,
     };
 
-    // PathPool heuristic: pathsRatio ≥ 0.15 and avgSegments ≥ 3
-    if (
-      enablePathPool === true ||
-      (enablePathPool === 'auto' && pathStats.pathsRatio >= 0.15 && pathStats.avgSegments >= 3)
-    ) {
+    // PathPool heuristic (LLM-first: lower thresholds for better token efficiency)
+    // Original: pathsRatio ≥ 0.15 AND avgSegments ≥ 3 (too strict)
+    // New: pathsRatio ≥ 3% OR (pathsCount > 50 AND avgSegments ≥ 2)
+    const shouldTryPathPool = enablePathPool === true || 
+      (enablePathPool === 'auto' && (
+        pathStats.pathsRatio >= 0.03 || 
+        (pathStats.pathsCount > 50 && pathStats.avgSegments >= 2)
+      ));
+    
+    if (shouldTryPathPool) {
       pathPool = new PathPool();
       
       // First pass: collect all paths into pool
