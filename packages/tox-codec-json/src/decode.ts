@@ -3,7 +3,7 @@
  */
 
 import { ToxErrorCode } from '@kb-labs/tox-core';
-importellular type { ToxJson } from './encode';
+import type { ToxJson } from './encode';
 
 export interface DecodeJsonResult {
   ok: boolean;

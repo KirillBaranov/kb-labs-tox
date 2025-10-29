@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { normalize, hash, toToxAST, fromToxAST, estimateTokens, ToxErrorCode } from '../src/index.js';
+import { normalize, hash, toToxAST, fromToxAST, estimateTokens, ToxErrorCode } from '../index';
 
 describe('normalize', () => {
   it('should sort object keys', () => {
