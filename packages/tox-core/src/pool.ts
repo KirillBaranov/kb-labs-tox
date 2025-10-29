@@ -104,7 +104,7 @@ export class KeyPool extends StringPool {
   /**
    * Create key ID (k1, k2, ...)
    */
-  add(value: string): string {
+  override add(value: string): string {
     const existing = this.getId(value);
     if (existing) {
       const entry = (this as any).entries.get(value);
@@ -132,7 +132,7 @@ export class PathPool extends StringPool {
   /**
    * Create path ID (p1, p2, ...)
    */
-  add(value: string): string {
+  override add(value: string): string {
     const existing = this.getId(value);
     if (existing) {
       const entry = (this as any).entries.get(value);
