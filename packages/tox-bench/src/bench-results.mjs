@@ -100,7 +100,12 @@ for (const name of fixtures) {
   
   // Timing: encode
   const encodeStart = performance.now();
-  const encoded = encodeJson(fixture, { compact: false });
+  // Use adaptive mode with all features enabled automatically
+  const encoded = encodeJson(fixture, {
+    enablePathPool: 'auto',
+    enableShapePool: 'auto',
+    enableValuePool: 'auto',
+  });
   const encodeMs = performance.now() - encodeStart;
   
   if (!encoded.ok || !encoded.result) {
@@ -138,7 +143,10 @@ for (const name of fixtures) {
   console.log(`  JSON: ${jsonSize.toLocaleString().padStart(10)} bytes  |  TOX: ${toxSize.toLocaleString().padStart(10)} bytes  |  Compression: ${compression.padStart(6)}%`);
   console.log(`  Tokens: ${jsonTokens.jsonTokens.toLocaleString().padStart(8)} (JSON)  |  ${toxTokens.jsonTokens.toLocaleString().padStart(8)} (TOX)  |  Compression: ${tokenCompression.padStart(6)}%`);
   console.log(`  Time: encode ${encodeMs.toFixed(2)}ms  |  decode ${decodeMs.toFixed(2)}ms`);
-  console.log(`  Dictionary: ${dictSize.toString().padStart(6)} keys`);
+  console.log(`  Dictionaries: $dict=${dictSize}, $pathDict=${pathDictSize}, $shapes=${shapesDictSize}, $valDict=${valDictSize}`);
+  if (Object.keys(features).length > 0) {
+    console.log(`  Features: ${Object.keys(features).filter(k => features[k]).join(', ')}`);
+  }
   console.log(`  Structure: ${structure.uniqueKeys}/${structure.totalKeys} unique keys (${(structure.keyUniquenessRatio * 100).toFixed(1)}%)`);
   console.log(`  Path-like strings: ${structure.pathLikeCount}/${structure.totalStrings} (${(structure.pathLikeRatio * 100).toFixed(1)}%)`);
   console.log();
