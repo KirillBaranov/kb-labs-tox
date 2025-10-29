@@ -31,6 +31,7 @@ export function decodeJson(toxJson: ToxJson, strict = false): DecodeJsonResult {
     // Get dictionaries
     const dict = toxJson.$dict || {};
     const pathDict = toxJson.$pathDict || {};
+    const shapesDict = toxJson.$shapes || {};
 
     // Build PathPool for path reconstruction
     const pathPool = new PathPool();
@@ -46,8 +47,35 @@ export function decodeJson(toxJson: ToxJson, strict = false): DecodeJsonResult {
       return joinPath(segments);
     };
 
-    // Resolve keys, paths, and values
+    // Resolve keys, paths, shapes, and values
     function resolve(value: unknown): unknown {
+      // Check if this is a ShapePool encoded array: { $shape: "s1", rows: [...] }
+      if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+        const obj = value as Record<string, unknown>;
+        if ('$shape' in obj && 'rows' in obj && typeof obj.$shape === 'string') {
+          const shapeId = obj.$shape;
+          const rows = obj.rows;
+          
+          // Get shape from dictionary
+          const shape = shapesDict[shapeId];
+          if (shape && Array.isArray(rows)) {
+            // Reconstruct array of objects from shape and tuples
+            const reconstructed = rows.map((row) => {
+              if (!Array.isArray(row)) {
+                return row;
+              }
+              const obj: Record<string, unknown> = {};
+              for (let i = 0; i < shape.length; i++) {
+                const key = shape[i]!;
+                obj[key] = resolve(row[i]);
+              }
+              return obj;
+            });
+            return reconstructed;
+          }
+        }
+      }
+
       // Check if this is a path segment array (array of strings matching pathDict IDs)
       if (Array.isArray(value) && value.length > 0 && typeof value[0] === 'string') {
         // Check if all items look like segment IDs (start with 'p' followed by digits)

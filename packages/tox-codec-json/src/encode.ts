@@ -2,7 +2,18 @@
  * Encode object to TOX JSON format
  */
 
-import { normalize, ToxErrorCode, KeyPool, PathPool, analyzePaths, isLikelyPath, splitPath } from '@kb-labs/tox-core';
+import {
+  normalize,
+  ToxErrorCode,
+  KeyPool,
+  PathPool,
+  analyzePaths,
+  isLikelyPath,
+  splitPath,
+  ShapePool,
+  deriveShape,
+  calculateUniformity,
+} from '@kb-labs/tox-core';
 import type { SchemaVersion } from '@kb-labs/tox-core';
 
 const RESERVED_KEYS = ['$schemaVersion', '$meta', '$dict', '$pathDict', '$valDict', '$shapes', 'data'];
@@ -40,6 +51,7 @@ export interface ToxJson {
   };
   $dict?: Record<string, string>;
   $pathDict?: Record<string, string>;
+  $shapes?: Record<string, string[]>;
   data: unknown;
 }
 
@@ -242,7 +254,119 @@ export function encodeJson(
       }
     }
 
-    // Replace keys and paths in data with IDs
+    // ShapePool: analyze arrays of objects and convert to tuple format if beneficial
+    let shapePool: ShapePool | null = null;
+    let shouldUseShapePool = false;
+    let shapesDict: Record<string, string[]> | undefined = undefined;
+    const shapeEncodedArrays = new Map<string, { shapeId: string; rows: unknown[][] }>();
+    const shapePoolDecision = {
+      enabled: false,
+      arrayName: undefined as string | undefined,
+      n: 0,
+      uniformity: 0,
+      savings: 0,
+    };
+
+    // Detect arrays of objects and check for ShapePool eligibility
+    if (enableShapePool === true || enableShapePool === 'auto') {
+      shapePool = new ShapePool();
+      
+      const analyzeArrays = (value: unknown, path = '<root>', parentKey?: string): void => {
+        if (value === null || typeof value !== 'object') {
+          return;
+        }
+
+        if (Array.isArray(value)) {
+          // Check if array contains objects
+          if (value.length > 0 && typeof value[0] === 'object' && value[0] !== null && !Array.isArray(value[0])) {
+            const objects = value.filter((item): item is Record<string, unknown> => 
+              typeof item === 'object' && item !== null && !Array.isArray(item)
+            );
+
+            if (objects.length >= 10) {
+              // Derive shapes for all objects
+              const shapes = objects.map((obj) => deriveShape(obj));
+              const uniformity = calculateUniformity(shapes);
+
+              // Heuristic: n ≥ 10 and uniformity ≥ 0.8
+              if (uniformity >= 0.8) {
+                // Find most common shape
+                const shapeCounts = new Map<string, { shape: string[]; count: number }>();
+                for (const shape of shapes) {
+                  const shapeKey = JSON.stringify(shape);
+                  const existing = shapeCounts.get(shapeKey);
+                  if (existing) {
+                    existing.count++;
+                  } else {
+                    shapeCounts.set(shapeKey, { shape, count: 1 });
+                  }
+                }
+                
+                let mostCommon = { shape: shapes[0]!, count: 1 };
+                for (const { shape, count } of shapeCounts.values()) {
+                  if (count > mostCommon.count) {
+                    mostCommon = { shape, count };
+                  }
+                }
+
+                // Add shape to pool and get ID
+                // shapePool is guaranteed to be non-null here because we're inside the if block
+                const shapeId = shapePool!.addShape(mostCommon.shape);
+                
+                // Convert objects to tuples (preserve order)
+                const rows: unknown[][] = [];
+                for (const obj of objects) {
+                  const shape = deriveShape(obj);
+                  // Only convert if shape matches most common (for uniformity >= 0.8, most will match)
+                  if (JSON.stringify(shape) === JSON.stringify(mostCommon.shape)) {
+                    const tuple = mostCommon.shape.map((key) => obj[key]);
+                    rows.push(tuple);
+                  }
+                }
+
+                if (enableShapePool === true || (enableShapePool === 'auto' && rows.length >= 10)) {
+                  // Estimate savings: compare tuple format vs full objects
+                  const originalSize = JSON.stringify(objects).length;
+                  const tupleSize = JSON.stringify({ $shape: shapeId, rows }).length;
+                  const shapeDictSize = JSON.stringify({ [shapeId]: mostCommon.shape }).length;
+                  const estimatedSavings = originalSize - tupleSize - shapeDictSize;
+
+                  if (enableShapePool === true || estimatedSavings > shapeDictSize) {
+                    shouldUseShapePool = true;
+                    shapePoolDecision.enabled = true;
+                    shapePoolDecision.arrayName = parentKey || path;
+                    shapePoolDecision.n = rows.length;
+                    shapePoolDecision.uniformity = uniformity;
+                    shapePoolDecision.savings = estimatedSavings;
+                    
+                    shapeEncodedArrays.set(path, { shapeId, rows });
+                  }
+                }
+              }
+            }
+          }
+          
+          // Recurse into array items
+          value.forEach((item, idx) => {
+            analyzeArrays(item, `${path}[${idx}]`, parentKey);
+          });
+          return;
+        }
+
+        // Recurse into object properties
+        for (const [key, val] of Object.entries(value)) {
+          analyzeArrays(val, path === '<root>' ? key : `${path}.${key}`, key);
+        }
+      };
+
+      analyzeArrays(normalized.value);
+
+      if (shouldUseShapePool && shapePool) {
+        shapesDict = shapePool.toShapesDict();
+      }
+    }
+
+    // Replace keys and paths in data with IDs, and apply ShapePool encoding
     const replaceKeys = (value: unknown, path = '<root>'): unknown => {
       if (value === null || typeof value !== 'object') {
         // Replace path strings with segment arrays if PathPool is enabled
@@ -255,6 +379,15 @@ export function encodeJson(
       }
 
       if (Array.isArray(value)) {
+        // Check if this array was encoded with ShapePool
+        const encoded = shapeEncodedArrays.get(path);
+        if (encoded) {
+          return {
+            $shape: encoded.shapeId,
+            rows: encoded.rows.map((row) => row.map((item) => replaceKeys(item, `${path}[row]`))),
+          };
+        }
+        
         return value.map((item, idx) => replaceKeys(item, `${path}[${idx}]`));
       }
 
@@ -298,9 +431,13 @@ export function encodeJson(
     if (enablePathPool !== false) {
       decisions.pathPool = pathPoolDecision;
     }
+    if (enableShapePool !== false && shapePoolDecision.n > 0) {
+      decisions.shapePool = shapePoolDecision;
+    }
 
     const features: Record<string, boolean> = {};
     if (shouldUsePathPool) features.pathPool = true;
+    if (shouldUseShapePool) features.shapePool = true;
 
     const result: ToxJson = {
       $schemaVersion: '1.0',
@@ -314,6 +451,7 @@ export function encodeJson(
       },
       ...(shouldUseDict && Object.keys(dict).length > 0 ? { $dict: dict } : {}),
       ...(shouldUsePathPool && pathDict && Object.keys(pathDict).length > 0 ? { $pathDict: pathDict } : {}),
+      ...(shouldUseShapePool && shapesDict && Object.keys(shapesDict).length > 0 ? { $shapes: shapesDict } : {}),
       data,
     };
 

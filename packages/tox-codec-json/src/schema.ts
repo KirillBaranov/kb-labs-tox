@@ -45,7 +45,20 @@ export function getToxJsonSchema() {
           },
         },
         additionalProperties: false,
-        description: "Path segment dictionary mapping wrapped IDs to segment strings",
+        description: "Path segment dictionary mapping segment IDs to segment strings",
+      },
+      $shapes: {
+        type: "object",
+        patternProperties: {
+          "^s[0-9]+$": {
+            type: "array",
+            items: {
+              type: "string",
+            },
+          },
+        },
+        additionalProperties: false,
+        description: "Shape dictionary mapping shape IDs to ordered key lists",
       },
       data: {
         description: "The actual data payload",
