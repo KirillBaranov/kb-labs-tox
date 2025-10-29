@@ -32,6 +32,7 @@ export function decodeJson(toxJson: ToxJson, strict = false): DecodeJsonResult {
     const dict = toxJson.$dict || {};
     const pathDict = toxJson.$pathDict || {};
     const shapesDict = toxJson.$shapes || {};
+    const valDict = toxJson.$valDict || {};
 
     // Build PathPool for path reconstruction
     const pathPool = new PathPool();
@@ -134,6 +135,10 @@ export function decodeJson(toxJson: ToxJson, strict = false): DecodeJsonResult {
       }
 
       if (value === null || typeof value !== 'object') {
+        // Resolve value ID to actual value if ValuePool is used
+        if (typeof value === 'string' && /^v\d+$/.test(value) && valDict[value] !== undefined) {
+          return resolve(valDict[value]);
+        }
         return value;
       }
 

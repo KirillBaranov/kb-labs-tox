@@ -13,10 +13,11 @@ import {
   ShapePool,
   deriveShape,
   calculateUniformity,
+  ValuePool,
 } from '@kb-labs/tox-core';
 import type { SchemaVersion } from '@kb-labs/tox-core';
 
-const RESERVED_KEYS = ['$schemaVersion', '$meta', '$dict', '$pathDict', '$valDict', '$shapes', 'data'];
+const RESERVED_KEYS = ['$schemaVersion', '$meta', '$dict', '$pathDict', '$valDict', '$shapes', 'data', 'cols', 'rows'];
 
 export interface ToxJson {
   $schemaVersion: SchemaVersion;
@@ -54,6 +55,7 @@ export interface ToxJson {
   $dict?: Record<string, string>;
   $pathDict?: Record<string, string>;
   $shapes?: Record<string, string[]>;
+  $valDict?: Record<string, unknown>;
   data: unknown;
 }
 
@@ -405,7 +407,68 @@ export function encodeJson(
       }
     }
 
-    // Replace keys and paths in data with IDs, and apply ShapePool encoding
+    // ValuePool: collect frequent scalar values and intern them
+    let valuePool: ValuePool | null = null;
+    let shouldUseValuePool = false;
+    let valDict: Record<string, unknown> | undefined = undefined;
+    const valuePoolDecision = {
+      enabled: false,
+      valuesCount: 0,
+      savings: 0,
+    };
+
+    if (enableValuePool === true || enableValuePool === 'auto') {
+      valuePool = new ValuePool();
+      
+      // First pass: collect all scalar values
+      const collectValues = (value: unknown): void => {
+        if (value === null || typeof value !== 'object') {
+          // Add scalar value to pool (skips paths if PathPool is enabled)
+          if (shouldUsePathPool && pathPool && typeof value === 'string' && isLikelyPath(value)) {
+            // Skip paths, they're handled by PathPool
+            return;
+          }
+          valuePool!.add(value);
+          return;
+        }
+
+        if (Array.isArray(value)) {
+          value.forEach(collectValues);
+          return;
+        }
+
+        for (const val of Object.values(value)) {
+          collectValues(val);
+        }
+      };
+      
+      collectValues(normalized.value);
+
+      // Build value dictionary with heuristics (freq ≥ 8, avgSaved ≥ 3)
+      valDict = valuePool.toDict(8, 3);
+      
+      if (enableValuePool === true || Object.keys(valDict).length > 0) {
+        // Estimate savings
+        const valDictOverhead = JSON.stringify(valDict).length;
+        let totalSavings = 0;
+        for (const entry of valuePool.getSortedEntries()) {
+          if (valDict[entry.id]) {
+            totalSavings += entry.estimatedSavings * entry.frequency;
+          }
+        }
+
+        if (enableValuePool === true || totalSavings > valDictOverhead) {
+          shouldUseValuePool = true;
+          valuePoolDecision.enabled = true;
+          valuePoolDecision.valuesCount = Object.keys(valDict).length;
+          valuePoolDecision.savings = totalSavings - valDictOverhead;
+        } else {
+          valDict = undefined; // Don't use if no savings
+        }
+      }
+    }
+
+    // Replace keys, paths, and values in data with IDs, and apply ShapePool encoding
     const replaceKeys = (value: unknown, path = '<root>'): unknown => {
       if (value === null || typeof value !== 'object') {
         // Replace path strings with segment arrays if PathPool is enabled
@@ -414,6 +477,15 @@ export function encodeJson(
           const segmentIds = pathPool.addPath(value);
           return segmentIds; // Return array of segment IDs
         }
+        
+        // Replace scalar values with IDs if ValuePool is enabled
+        if (shouldUseValuePool && valuePool && valDict) {
+          const valueId = valuePool.getId(value);
+          if (valueId && valDict[valueId]) {
+            return valueId; // Return value ID
+          }
+        }
+        
         return value;
       }
 
@@ -488,6 +560,9 @@ export function encodeJson(
     if (enableShapePool !== false && shapePoolDecision.n > 0) {
       decisions.shapePool = shapePoolDecision;
     }
+    if (enableValuePool !== false && valuePoolDecision.valuesCount > 0) {
+      decisions.valuePool = valuePoolDecision;
+    }
 
     const features: Record<string, boolean> = {};
     if (shouldUsePathPool) features.pathPool = true;
@@ -501,6 +576,7 @@ export function encodeJson(
         }
       }
     }
+    if (shouldUseValuePool) features.valuePool = true;
 
     const result: ToxJson = {
       $schemaVersion: '1.0',
@@ -515,6 +591,7 @@ export function encodeJson(
       ...(shouldUseDict && Object.keys(dict).length > 0 ? { $dict: dict } : {}),
       ...(shouldUsePathPool && pathDict && Object.keys(pathDict).length > 0 ? { $pathDict: pathDict } : {}),
       ...(shouldUseShapePool && shapesDict && Object.keys(shapesDict).length > 0 ? { $shapes: shapesDict } : {}),
+      ...(shouldUseValuePool && valDict && Object.keys(valDict).length > 0 ? { $valDict: valDict } : {}),
       data,
     };
 
