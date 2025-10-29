@@ -8,9 +8,12 @@ importers:
 
   .:
     devDependencies:
+      '@byjohann/toon':
+        specifier: ^0.4.0
+        version: 0.4.0
       '@kb-labs/devkit':
         specifier: github:KirillBaranov/kb-labs-devkit#main
-        version: https://codeload.github.com/KirillBaranov/kb-labs-devkit/tar.gz/94cd461526c8c1b732838dc92ae80d0b9f31b3c0(@typescript-eslint/parser@8.44.0(eslint@9.35.0)(typescript@5.9.2))(eslint@9.35.0)(tsup@8.5.0(postcss@8.5.6)(tsx@4.20.5)(typescript@5.9.2))(typescript-eslint@8.44.0(eslint@9.35.0)(typescript@5.9.2))(typescript@5.9.2)(vitest@3.2.4(@types/node@24.9.2))
+        version: https://codeload.github.com/KirillBaranov/kb-labs-devkit/tar.gz/5dd910147b8c09742ca13aeb2ea6aba5ffc5159b(@typescript-eslint/parser@8.44.0(eslint@9.35.0)(typescript@5.9.2))(eslint@9.35.0)(tsup@8.5.0(postcss@8.5.6)(tsx@4.20.5)(typescript@5.9.2))(typescript-eslint@8.44.0(eslint@9.35.0)(typescript@5.9.2))(typescript@5.9.2)(vitest@3.2.4(@types/node@24.9.2))
       '@typescript-eslint/eslint-plugin':
         specifier: ^8
         version: 8.44.0(@typescript-eslint/parser@8.44.0(eslint@9.35.0)(typescript@5.9.2))(eslint@9.35.0)(typescript@5.9.2)
@@ -53,7 +56,7 @@ importers:
     devDependencies:
       '@kb-labs/devkit':
         specifier: github:KirillBaranov/kb-labs-devkit#main
-        version: https://codeload.github.com/KirillBaranov/kb-labs-devkit/tar.gz/94cd461526c8c1b732838dc92ae80d0b9f31b3c0(@typescript-eslint/parser@8.44.0(eslint@9.35.0)(typescript@5.9.2))(eslint@9.35.0)(tsup@8.5.0(postcss@8.5.6)(tsx@4.20.5)(typescript@5.9.2))(typescript-eslint@8.44.0(eslint@9.35.0)(typescript@5.9.2))(typescript@5.9.2)(vitest@3.2.4(@types/node@24.9.2))
+        version: https://codeload.github.com/KirillBaranov/kb-labs-devkit/tar.gz/5dd910147b8c09742ca13aeb2ea6aba5ffc5159b(@typescript-eslint/parser@8.44.0(eslint@9.35.0)(typescript@5.9.2))(eslint@9.35.0)(tsup@8.5.0(postcss@8.5.6)(tsx@4.20.5)(typescript@5.9.2))(typescript-eslint@8.44.0(eslint@9.35.0)(typescript@5.9.2))(typescript@5.9.2)(vitest@3.2.4(@types/node@24.9.2))
       '@vitejs/plugin-vue':
         specifier: ^5.0.0
         version: 5.2.4(vite@5.4.20(@types/node@24.9.2))(vue@3.5.21(typescript@5.9.2))
@@ -266,6 +269,9 @@ packages:
   '@bcoe/v8-coverage@1.0.2':
     resolution: {integrity: sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==}
     engines: {node: '>=18'}
+
+  '@byjohann/toon@0.4.0':
+    resolution: {integrity: sha512-3RcynuFRrGCINeKpDA3uGlKcwubSgKRmvRd4ZMgYLfnA/U/6nhf27wFqTBGGT4k6w4JVhyiGWY7iAlGl2lG6VQ==}
 
   '@emnapi/core@1.5.0':
     resolution: {integrity: sha512-sbP8GzB1WDzacS8fgNPpHlp6C9VZe+SJP3F90W9rLemaQj2PzIuTEl1qDOYQf58YIpyjViI24y9aPWCjEzY2cg==}
@@ -2613,6 +2619,8 @@ snapshots:
       '@babel/helper-validator-identifier': 7.27.1
 
   '@bcoe/v8-coverage@1.0.2': {}
+
+  '@byjohann/toon@0.4.0': {}
 
   '@emnapi/core@1.5.0':
     dependencies:
