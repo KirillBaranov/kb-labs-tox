@@ -141,7 +141,8 @@ export function encodeJson(
     // Final safety: for very small payloads (< 2KB), never use dictionary unless forced
     if (originalDataSize < 2000 && !compact) {
       shouldUseDict = false;
- So}
+    }
+对这种
 
     // Replace keys in data with IDs
     const replaceKeys = (value: unknown, path = '<root>'): unknown => {
