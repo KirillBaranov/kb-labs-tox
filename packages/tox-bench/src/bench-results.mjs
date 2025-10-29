@@ -134,6 +134,12 @@ for (const name of fixtures) {
     ? ((1 - toxTokens.jsonTokens / jsonTokens.jsonTokens) * 100).toFixed(1) 
     : '0.0';
   const dictSize = encoded.result.$dict ? Object.keys(encoded.result.$dict).length : 0;
+  const pathDictSize = encoded.result.$pathDict ? Object.keys(encoded.result.$pathDict).length : 0;
+  const shapesDictSize = encoded.result.$shapes ? Object.keys(encoded.result.$shapes).length : 0;
+  const valDictSize = encoded.result.$valDict ? Object.keys(encoded.result.$valDict).length : 0;
+  
+  // Get features and decisions from metadata
+  const features = encoded.result.$meta?.features || {};
   
   const status = jsonSize < 1000 ? '⚠️  (small)' : 
                  parseFloat(compression) >= 35 ? '✅' :
