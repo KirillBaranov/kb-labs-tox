@@ -1,6 +1,6 @@
 # ADR-0011: Domain-Specific Optimization Strategy
 
-**Date:** 2025-01-26  
+**Date:** 2025-10-29  
 **Status:** Proposed  
 **Deciders:** KB Labs Team
 
