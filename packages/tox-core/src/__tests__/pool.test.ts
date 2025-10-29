@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { StringPool, KeyPool } from '../src/pool';
+import { StringPool, KeyPool } from '../pool';
 
 describe('StringPool', () => {
   it('should add and retrieve strings', () => {
