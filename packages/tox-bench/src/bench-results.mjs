@@ -12,7 +12,13 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const fixturesDir = join(__dirname, '../fixtures/mind');
 
-const fixtures = ['externals', 'docs', 'meta', 'impact', 'chain'];
+// Include both mock fixtures (small) and real fixtures (large)
+const fixtures = [
+  // Mock fixtures (small, for testing)
+  'externals', 'docs', 'meta', 'impact', 'chain',
+  // Real fixtures from kb-labs-cli (large, real data)
+  'api-index', 'docs-index', 'meta-real', 'query-result-real'
+].filter(Boolean);
 
 console.log('=== TOX Benchmarks Results ===\n');
 

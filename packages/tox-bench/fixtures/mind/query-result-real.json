@@ -1,0 +1,32 @@
+{
+  "code": null,
+  "meta": {
+    "apiHash": "94f8ed0917198f4051bc889c7dfe491ccbb74ddd833271546fd84c8c5d4e28a9",
+    "cached": false,
+    "cwd": "/Users/kirillbaranov/Desktop/kb-labs/kb-labs-cli",
+    "depsHash": "8936b47535048fe4f68910c237abbf73539b58e69a1f74c1fad2f2750dad9d31",
+    "edgesTouched": 0,
+    "filesScanned": 0,
+    "queryId": "",
+    "timingMs": {
+      "filter": 0,
+      "load": 1,
+      "total": 1
+    },
+    "tokensEstimate": 13,
+    "truncated": false
+  },
+  "ok": true,
+  "params": {
+    "file": "/Users/kirillbaranov/Desktop/kb-labs/kb-labs-cli/packages/cli/dist/bin.js"
+  },
+  "paths": {},
+  "query": "impact",
+  "result": {
+    "count": 0,
+    "importers": []
+  },
+  "schemaVersion": "1.0",
+  "suggestNextQueries": [],
+  "summary": "Found 0 file(s) importing this module"
+}
