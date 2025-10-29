@@ -1,0 +1,30 @@
+{
+  "ok": true,
+  "query": "chain",
+  "params": { "file": "src/index.ts" },
+  "result": {
+    "levels": [
+      { "depth": 1, "files": ["a.ts", "b.ts", "c.ts"] },
+      { "depth": 2, "files": ["d.ts", "e.ts"] },
+      { "depth": 3, "files": ["f.ts"] }
+    ],
+    "visited": 6
+  },
+  "schemaVersion": "1.0",
+  "meta": {
+    "cwd": "/test/project",
+    "queryId": "chain-test-001",
+    "tokensEstimate": 140,
+    "cached": false,
+    "filesScanned": 12,
+    "edgesTouched": 8,
+    "depsHash": "chain123hash",
+    "apiHash": "chain456hash",
+    "timingMs": {
+      "load": 40,
+      "filter": 15,
+      "total": 55
+    }
+  }
+}
+

@@ -1,0 +1,30 @@
+{
+  "ok": true,
+  "query": "impact",
+  "params": { "file": "src/index.ts" },
+  "result": {
+    "importers": [
+      { "file": "a.ts", "imports": ["b.ts", "c.ts"], "relevance": 0.9 },
+      { "file": "d.ts", "imports": ["e.ts"], "relevance": 0.8 },
+      { "file": "f.ts", "imports": ["g.ts", "h.ts", "i.ts"], "relevance": 0.7 }
+    ],
+    "count": 3
+  },
+  "schemaVersion": "1.0",
+  "meta": {
+    "cwd": "/test/project",
+    "queryId": "impact-test-001",
+    "tokensEstimate": 180,
+    "cached": false,
+    "filesScanned": 8,
+    "edgesTouched": 6,
+    "depsHash": "impact123hash",
+    "apiHash": "impact456hash",
+    "timingMs": {
+      "load": 35,
+      "filter": 10,
+      "total": 45
+    }
+  }
+}
+

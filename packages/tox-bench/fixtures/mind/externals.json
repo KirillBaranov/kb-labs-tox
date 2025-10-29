@@ -1,0 +1,36 @@
+{
+  "ok": true,
+  "query": "externals",
+  "params": {},
+  "result": {
+    "externals": {
+      "@kb-labs/core": ["package1", "package2", "package3", "package4", "package5"],
+      "@kb-labs/shared": ["package6", "package7", "package8"],
+      "@kb-labs/mind": ["package9", "package10"],
+      "typescript": ["package11", "package12", "package13", "package14"],
+      "vitest": ["package15", "package16"],
+      "@types/node": ["package17", "package18", "package19"],
+      "eslint": ["package20", "package21", "package22", "package23"],
+      "prettier": ["package24"],
+      "rimraf": ["package25", "package26", "package27"]
+    },
+    "count": 27
+  },
+  "schemaVersion": "1.0",
+  "meta": {
+    "cwd": "/test/project",
+    "queryId": "externals-test-001",
+    "tokensEstimate": 150,
+    "cached": false,
+    "filesScanned": 50,
+    "edgesTouched": 0,
+    "depsHash": "abc123def456",
+    "apiHash": "xyz789uvw012",
+    "timingMs": {
+      "load": 45,
+      "filter": 12,
+      "total": 57
+    }
+  }
+}
+

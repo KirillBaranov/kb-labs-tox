@@ -1,0 +1,38 @@
+{
+  "ok": true,
+  "query": "meta",
+  "params": {},
+  "result": {
+    "project": "kb-labs-tox",
+    "products": [
+      { "id": "tox-core", "name": "TOX Core", "version": "0.1.0", "description": "Core TOX functionality" },
+      { "id": "tox-codec-json", "name": "TOX JSON Codec", "version": "0.1.0", "description": "JSON codec for TOX" },
+      { "id": "tox-adapters", "name": "TOX Adapters", "version": "0.1.0", "description": "Domain adapters" },
+      { "id": "tox-cli", "name": "TOX CLI", "version": "0.1.0", "description": "CLI tools" },
+      { "id": "tox-bench", "name": "TOX Benchmarks", "version": "0.1.0", "description": "Benchmarking tools" }
+    ],
+    "generatedAt": "2025-01-15T12:00:00Z",
+    "workspace": {
+      "root": "/test/project",
+      "packages": 5,
+      "apps": 1
+    }
+  },
+  "schemaVersion": "1.0",
+  "meta": {
+    "cwd": "/test/project",
+    "queryId": "meta-test-001",
+    "tokensEstimate": 120,
+    "cached": false,
+    "filesScanned": 10,
+    "edgesTouched": 0,
+    "depsHash": "meta123hash",
+    "apiHash": "meta456hash",
+    "timingMs": {
+      "load": 20,
+      "filter": 5,
+      "total": 25
+    }
+  }
+}
+

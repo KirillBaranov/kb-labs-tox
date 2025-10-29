@@ -1,0 +1,34 @@
+{
+  "ok": true,
+  "query": "docs",
+  "params": {},
+  "result": {
+    "docs": [
+      { "path": "docs/spec.md", "title": "TOX Specification", "type": "spec", "tags": ["core", "architecture"] },
+      { "path": "docs/codec-json.md", "title": "JSON Codec Format", "type": "api", "tags": ["codec", "json"] },
+      { "path": "docs/adapters.md", "title": "Adapters Guide", "type": "guide", "tags": ["adapters", "integration"] },
+      { "path": "docs/adr/0001.md", "title": "ADR 0001", "type": "adr", "tags": ["decision", "architecture"] },
+      { "path": "docs/adr/0002.md", "title": "ADR 0002", "type": "adr", "tags": ["decision"] },
+      { "path": "README.md", "title": "TOX README", "type": "readme", "tags": ["getting-started"] },
+      { "path": "CONTRIBUTING.md", "title": "Contributing Guide", "type": "guide", "tags": ["contribution"] }
+    ],
+    "count": 7
+  },
+  "schemaVersion": "1.0",
+  "meta": {
+    "cwd": "/test/project",
+    "queryId": "docs-test-001",
+    "tokensEstimate": 200,
+    "cached": false,
+    "filesScanned": 15,
+    "edgesTouched": 0,
+    "depsHash": "doc123hash456",
+    "apiHash": "doc789hash012",
+    "timingMs": {
+      "load": 30,
+      "filter": 8,
+      "total": 38
+    }
+  }
+}
+
