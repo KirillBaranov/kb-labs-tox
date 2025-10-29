@@ -3,5 +3,5 @@
  * CLI commands for KB Labs TOX
  */
 
-export * from './cli.manifest.js';
+export * from './cli.manifest';
 

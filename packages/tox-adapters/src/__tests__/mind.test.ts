@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { toToxQueryResult, fromToxQueryResult } from '../mind/queryResult.js';
+import { toToxQueryResult, fromToxQueryResult } from '../mind/queryResult';
 import type { QueryResult } from '@kb-labs/mind-types';
 
 describe('toToxQueryResult / fromToxQueryResult', () => {

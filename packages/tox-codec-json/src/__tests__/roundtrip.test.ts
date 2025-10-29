@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { encodeJson, decodeJson } from '../src/index.js';
+import { encodeJson, decodeJson } from '../../src';
 
 describe('Roundtrip', () => {
   it('should roundtrip simple object', () => {

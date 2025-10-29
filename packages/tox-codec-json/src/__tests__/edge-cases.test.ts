@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { encodeJson, decodeJson } from '../src/index.js';
+import { encodeJson, decodeJson } from '../../src';
 import { ToxErrorCode } from '@kb-labs/tox-core';
 
 describe('Edge Cases', () => {

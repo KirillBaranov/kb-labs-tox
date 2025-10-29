@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { encodeJson } from '../src/index.js';
+import { encodeJson } from '../../src';
 
 describe('Determinism', () => {
   it('should produce identical output for same input (multiple encodes)', () => {
