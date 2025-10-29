@@ -3,18 +3,18 @@
  * Core TOX functionality: normalization, pooling, hashing
  */
 
-export * from './types.js';
-export * from './normalize.js';
-export * from './pool.js';
-export * from './hash.js';
-export * from './errors.js';
-export * from './limits.js';
-export { ToxErrorCode } from './errors.js';
-export { KeyPool, PathPool, StringPool } from './pool.js';
-export type { NormalizeResult } from './normalize.js';
+export * from './types';
+export * from './normalize';
+export * from './pool';
+export * from './hash';
+export * from './errors';
+export * from './limits';
+export { ToxErrorCode } from './errors';
+export { KeyPool, PathPool, StringPool } from './pool';
+export type { NormalizeResult } from './normalize';
 
-import type { ToToxOpts, ToxAST, TokenEstimate } from './types.js';
-import { normalize } from './normalize.js';
+import type { ToToxOpts, ToxAST, TokenEstimate } from './types';
+import { normalize } from './normalize';
 import { estimateTokens as mindEstimateTokens } from '@kb-labs/mind-core';
 
 /**

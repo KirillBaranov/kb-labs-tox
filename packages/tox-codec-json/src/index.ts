@@ -3,8 +3,8 @@
  * JSON codec for TOX format
  */
 
-export * from './encode.js';
-export * from './decode.js';
-export * from './contentType.js';
-export * from './schema.js';
+export * from './encode';
+export * from './decode';
+export * from './contentType';
+export * from './schema';
 

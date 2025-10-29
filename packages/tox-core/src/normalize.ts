@@ -2,9 +2,9 @@
  * Normalize objects for deterministic TOX encoding
  */
 
-import { createError, ToxErrorCode } from './errors.js';
-import { MAX_DEPTH, MAX_KEYS, MAX_ARRAY_LENGTH } from './limits.js';
-import type { ToToxOpts } from './types.js';
+import { createError, ToxErrorCode } from './errors';
+import { MAX_DEPTH, MAX_KEYS, MAX_ARRAY_LENGTH } from './limits';
+import type { ToToxOpts } from './types';
 
 export interface NormalizeResult {
   value: unknown;
