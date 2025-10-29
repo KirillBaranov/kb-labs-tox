@@ -11,6 +11,15 @@ TOX ensures that identical inputs produce identical outputs, enabling:
 - Reproducible builds
 - Deterministic testing
 
+### Efficiency
+
+TOX automatically optimizes compression based on payload characteristics:
+- **Small payloads (< 2KB)**: Dictionary compression disabled automatically to avoid overhead
+- **Large payloads (> 2KB)**: Dictionary compression enabled when beneficial
+- **Forced mode**: `compact: true` option forces dictionary usage regardless of size
+
+This ensures TOX format is efficient for both small and large payloads.
+
 ### Stability Rules
 
 1. **Object keys**: Sorted lexicographically (ascending)

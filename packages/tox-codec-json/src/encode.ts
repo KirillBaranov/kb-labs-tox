@@ -113,9 +113,35 @@ export function encodeJson(
     const dict = keyPool.toDict();
 
     // Apply compact mode heuristic: only use dict if it's beneficial
+    // For small payloads (< 2KB), dictionary overhead often exceeds benefits
     const dictSize = Object.keys(dict).length;
     const dataStr = JSON.stringify(normalized.value);
-    const shouldUseDict = dictSize > 0 && (compact || dictSize <= dataStr.length * 0.5);
+    const originalDataSize = dataStr.length;
+    
+    // If compact mode is forced, always use dictionary
+    let shouldUseDict = false;
+    if (compact && dictSize > 0) {
+      shouldUseDict = true;
+    } else if (dictSize > 0 && originalDataSize >= 2000) {
+      // For payloads >= 2KB, check if dictionary would be beneficial
+      // Dictionary overhead: ~150 bytes (meta) + JSON encoding of dict itself
+      const dictJsonSize = JSON.stringify(dict).length;
+      const baseOverhead = 150; // $schemaVersion + $meta
+      const totalOverhead = baseOverhead + dictJsonSize;
+      
+      // Estimate savings: each key occurrence saves ~3-10 bytes depending on key length
+      // Rough heuristic: if dict is < 50% of data size, likely beneficial
+      const overheadRatio = totalOverhead / originalDataSize;
+      
+      // Use dictionary if overhead is reasonable (< 30% of data size)
+      // This ensures we don't increase size significantly
+      shouldUseDict = overheadRatio < 0.3;
+    }
+    
+    // Final safety: for very small payloads (< 2KB), never use dictionary unless forced
+    if (originalDataSize < 2000 && !compact) {
+      shouldUseDict = false;
+ So}
 
     // Replace keys in data with IDs
     const replaceKeys = (value: unknown, path = '<root>'): unknown => {
