@@ -27,7 +27,8 @@ for (const name of fixtures) {
   const json = JSON.stringify(fixture);
   const jsonSize = json.length;
   
-  const encoded = encodeJson(fixture, { compact: true });
+  // Don't force compact mode - let heuristic decide
+  const encoded = encodeJson(fixture, { compact: false });
   if (!encoded.ok || !encoded.result) {
     console.log(`${name}: ERROR - ${encoded.message}`);
     continue;
