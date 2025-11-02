@@ -1,8 +1,10 @@
 # ADR-0014: Consider TOON as Alternative to TOX
 
-**Date:** 2025-01-26  
-**Status:** Proposed  
+**Date:** 2025-01-26
+**Status:** Proposed
 **Deciders:** KB Labs Team
+**Last Reviewed:** 2025-11-03
+**Tags:** [architecture, process]
 
 ## Context
 

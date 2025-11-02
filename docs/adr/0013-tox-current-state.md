@@ -1,8 +1,10 @@
 # ADR-0013: TOX Current State - Not Ready for Production
 
-**Date:** 2025-01-26  
-**Status:** Accepted  
+**Date:** 2025-01-26
+**Status:** Accepted
 **Deciders:** KB Labs Team
+**Last Reviewed:** 2025-11-03
+**Tags:** [architecture, process]
 
 ## Context
 

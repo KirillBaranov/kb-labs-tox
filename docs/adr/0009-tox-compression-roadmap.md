@@ -1,8 +1,10 @@
 # ADR-0009: TOX Compression Roadmap & Baseline
 
-**Date:** 2025-10-29  
-**Status:** In Progress  
+**Date:** 2025-10-29
+**Status:** In Progress
 **Deciders:** KB Labs Team
+**Last Reviewed:** 2025-11-03
+**Tags:** [architecture, performance]
 
 ## Context
 
