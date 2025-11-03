@@ -1,0 +1,199 @@
+{
+  "version": "v20.19.4",
+  "cliVersion": "0.1.0",
+  "timestamp": 1761916918556,
+  "lockfileHash": "999221ac1781dfc9e6714d180951e37e3732e33d21995756b520921fcf151543",
+  "configHash": "05c5557936fe4fa7c83efa0cead88e1266c15b553e8ba826996f8ca6e0eec0f9",
+  "packages": {
+    "@kb-labs/tox-cli": {
+      "version": "0.1.0",
+      "manifestHash": "0dd1c35d984362b98a95a37c1878d0031d0722d3890174c54b44d8c48e2d5b1f",
+      "manifestPath": "/Users/kirillbaranov/Desktop/kb-labs/kb-labs-tox/packages/tox-cli/dist/cli.manifest.js",
+      "pkgJsonMtime": 1761915999317.7668,
+      "manifestMtime": 1761916907676.3943,
+      "result": {
+        "manifests": [
+          {
+            "manifestVersion": "1.0",
+            "id": "tox:encode",
+            "aliases": [
+              "tox-encode"
+            ],
+            "group": "tox",
+            "describe": "Encode JSON to TOX format",
+            "longDescription": "Convert JSON objects to compact TOX JSON format",
+            "flags": [
+              {
+                "name": "in",
+                "type": "string",
+                "description": "Input file path",
+                "required": true
+              },
+              {
+                "name": "out",
+                "type": "string",
+                "description": "Output file path",
+                "required": true
+              },
+              {
+                "name": "preset",
+                "type": "string",
+                "description": "Preset keys file path"
+              },
+              {
+                "name": "compact",
+                "type": "boolean",
+                "description": "Enable compact mode"
+              },
+              {
+                "name": "strict",
+                "type": "boolean",
+                "description": "Enable strict mode"
+              },
+              {
+                "name": "json",
+                "type": "boolean",
+                "description": "Output in JSON format"
+              },
+              {
+                "name": "debug",
+                "type": "boolean",
+                "description": "Enable debug output"
+              },
+              {
+                "name": "debug-steps",
+                "type": "boolean",
+                "description": "Show processing steps"
+              }
+            ],
+            "examples": [
+              "kb tox encode --in input.json --out output.tox.json",
+              "kb tox encode --in input.json --out output.tox.json --preset presets/mind-v1.json --compact",
+              "kb tox encode --in input.json --out output.tox.json --strict --json"
+            ],
+            "namespace": "tox",
+            "package": "@kb-labs/tox-cli"
+          },
+          {
+            "manifestVersion": "1.0",
+            "id": "tox:decode",
+            "aliases": [
+              "tox-decode"
+            ],
+            "group": "tox",
+            "describe": "Decode TOX format to JSON",
+            "longDescription": "Convert TOX JSON format back to regular JSON",
+            "flags": [
+              {
+                "name": "in",
+                "type": "string",
+                "description": "Input TOX file path",
+                "required": true
+              },
+              {
+                "name": "out",
+                "type": "string",
+                "description": "Output file path",
+                "required": true
+              },
+              {
+                "name": "strict",
+                "type": "boolean",
+                "description": "Enable strict mode"
+              },
+              {
+                "name": "json",
+                "type": "boolean",
+                "description": "Output in JSON format"
+              },
+              {
+                "name": "debug",
+                "type": "boolean",
+                "description": "Enable debug output"
+              }
+            ],
+            "examples": [
+              "kb tox decode --in input.tox.json --out output.json",
+              "kb tox decode --in input.tox.json --out output.json --strict --json"
+            ],
+            "namespace": "tox",
+            "package": "@kb-labs/tox-cli"
+          },
+          {
+            "manifestVersion": "1.0",
+            "id": "tox:bench",
+            "aliases": [
+              "tox-bench"
+            ],
+            "group": "tox",
+            "describe": "Benchmark TOX encoding/decoding",
+            "longDescription": "Measure compression ratio and performance metrics",
+            "flags": [
+              {
+                "name": "in",
+                "type": "string",
+                "description": "Input file path",
+                "required": true
+              },
+              {
+                "name": "runs",
+                "type": "number",
+                "default": 30,
+                "description": "Number of benchmark runs"
+              },
+              {
+                "name": "json",
+                "type": "boolean",
+                "description": "Output in JSON format"
+              }
+            ],
+            "examples": [
+              "kb tox bench --in fixtures/mind/externals.json",
+              "kb tox bench --in fixtures/mind/externals.json --runs 50 --json"
+            ],
+            "namespace": "tox",
+            "package": "@kb-labs/tox-cli"
+          },
+          {
+            "manifestVersion": "1.0",
+            "id": "tox:inspect",
+            "aliases": [
+              "tox-inspect"
+            ],
+            "group": "tox",
+            "describe": "Inspect TOX file structure",
+            "longDescription": "Display dictionary and statistics about TOX file",
+            "flags": [
+              {
+                "name": "in",
+                "type": "string",
+                "description": "Input TOX file path",
+                "required": true
+              },
+              {
+                "name": "json",
+                "type": "boolean",
+                "description": "Output in JSON format"
+              },
+              {
+                "name": "verbose",
+                "type": "boolean",
+                "description": "Verbose output"
+              }
+            ],
+            "examples": [
+              "kb tox inspect --in input.tox.json",
+              "kb tox inspect --in input.tox.json --verbose --json"
+            ],
+            "namespace": "tox",
+            "package": "@kb-labs/tox-cli"
+          }
+        ],
+        "source": "workspace",
+        "packageName": "@kb-labs/tox-cli",
+        "manifestPath": "/Users/kirillbaranov/Desktop/kb-labs/kb-labs-tox/packages/tox-cli/dist/cli.manifest.js",
+        "pkgRoot": "/Users/kirillbaranov/Desktop/kb-labs/kb-labs-tox/packages/tox-cli"
+      }
+    }
+  }
+}
